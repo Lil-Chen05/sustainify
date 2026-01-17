@@ -1,10 +1,24 @@
 {
-    "name": "Sustainify",
-    "description": "Shop sustainably",
-    "version": "0.1",
-    "manifest_version": 3,
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": "favicon.png"
+  "name": "Sustainify",
+  "description": "Shop sustainably",
+  "version": "0.1",
+  "manifest_version": 3,
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "favicon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
     }
-  }
+  ]
+}

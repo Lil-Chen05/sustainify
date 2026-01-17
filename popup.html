@@ -1,260 +1,326 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-<meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-    :root {
-        --bg: hsl(100, 40%, 96%);
-        --border: hsl(100, 30%, 60%);
-        --accent: hsl(100, 30%, 25%);
-        --text-light: hsl(100, 20%, 50%);
-        --text-dark: hsl(100, 20%, 15%);
-    }
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+        rel="stylesheet">
+    <style>
+        [data-theme="light"] {
+            --bg: hsl(145 30% 97%);
+            --card: hsl(145 25% 94%);
+            --border: hsl(145 20% 80%);
+            --accent: hsl(155 40% 28%);
+            --accent-moderate: hsl(155 35% 70%);
+            --accent-soft: hsl(155 35% 55%);
+            --muted: hsl(145 15% 50%);
+            --text: hsl(155 30% 18%);
+            --caption-bg: hsl(155 30% 90%);
+            --shadow: 0 1px 3px hsl(155 20% 50% / 0.25);
+            --shadow-hover: 0 4px 8px hsl(155 25% 40% / 0.2);
+            --shadow-thumb: 0 2px 6px hsl(155 40% 30% / 0.3);
+        }
 
+        [data-theme="dark"] {
+            --bg: hsl(155 25% 10%);
+            --card: hsl(155 20% 14%);
+            --border: hsl(155 15% 25%);
+            --accent: hsl(155 50% 55%);
+            --accent-moderate: hsl(155 30% 35%);
+            --accent-soft: hsl(155 40% 40%);
+            --muted: hsl(155 15% 50%);
+            --text: hsl(145 20% 90%);
+            --caption-bg: hsl(155 20% 18%);
+            --shadow: 0 1px 3px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(155 20% 20%);
+            --shadow-hover: 0 6px 12px hsl(0 0% 0% / 0.5), inset 0 1px 0 hsl(155 20% 22%);
+            --shadow-thumb: 0 2px 8px hsl(155 50% 40% / 0.4);
+        }
 
-html, body {
-    margin: 0;
-    padding: 0;
-    width: fit-content;       
-    height: fit-content;
-    background-color: var(--bg);
-    font-family: 'Source Serif 4', serif;
-    font-weight: 300;
-    color: var(--accent);
-}
-*, *::before, *::after {
-    box-sizing: border-box;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-#main-container {
-    display: flex;
-    flex-direction: column;
-    width: fit-content; 
-    height: fit-content;
-    padding: 1.2em 1.5em;
-    background: var(--bg);
-    
-    box-sizing: border-box;
-    outline: 1px solid var(--border);
-    font-size: 1.1rem;
+        body {
+            font: 400 1rem/1.5 'Source Serif 4', Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+        }
 
-    h1 {
-        font-size: 1em;
-        font-weight: 600;
-        padding-bottom: 0.25em;
-        border-bottom: 1px solid var(--border);
-        letter-spacing: 0.02em;
-    }
-}
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            min-width: 350px;
+        }
 
-h1, h2, h3, h4, h5, h6 {
-    margin: 0;
-    padding: 0;
-    font-family: 'Source Serif 4', serif;
-    color: var(--accent);
-}
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.75rem;
+            border-bottom: 1.5px solid var(--border);
+        }
 
-#settings-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8em;
-    padding-top: 0.25em;
-}
+        h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: var(--accent);
+            line-height: 28px;
+        }
 
-.section-caption {
-    font-size: 0.7em;
-    text-transform: lowercase;
-    color: var(--text-dark);
-    font-family: 'Source Serif 4', serif;
-    font-weight: 500;
-}
+        .icon-btn {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--accent);
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
 
-.setting-item {
-    display: grid;
-    grid-template-columns: 140px 100px 180px;
-    align-items: center;
-    gap: 1em;
-}
+        .icon-btn:hover {
+            background: var(--card);
+            border-color: var(--accent-moderate);
+        }
 
-.setting-label {
-    font-size: 0.75em;
-    font-weight: 300;
-    color: var(--accent);
-    text-align: right;
-    letter-spacing: 0.01em;
-}
+        .icon-btn svg {
+            display: block;
+        }
 
-.importance-label {
-    font-size: 0.62em;
-    color: var(--text-light);
-    font-weight: 300;
-    font-style: italic;
-    white-space: nowrap;
-}
+        .settings {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
 
-.slider-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
+        .setting {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: fadeIn 0.4s ease backwards;
+        }
 
-.slider-notches {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    pointer-events: none;
-}
+        .setting:nth-child(1) {
+            animation-delay: 0.03s;
+        }
 
-.notch {
-    width: 1px;
-    height: 6px;
-    background: var(--border);
-    opacity: 0.5;
-}
+        .setting:nth-child(2) {
+            animation-delay: 0.06s;
+        }
 
-input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 1px;
-    background: var(--border);
-    outline: none;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    position: relative;
-    z-index: 1;
-}
+        .setting:nth-child(3) {
+            animation-delay: 0.09s;
+        }
 
-input[type="range"]:hover {
-    opacity: 1;
-}
+        .setting:nth-child(4) {
+            animation-delay: 0.12s;
+        }
 
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 8px;
-    height: 8px;
-    background: var(--accent);
-    cursor: pointer;
-    transition: transform 0.15s ease;
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-}
+        .setting:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-}
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+        }
 
-input[type="range"]::-moz-range-thumb {
-    width: 8px;
-    height: 8px;
-    background: var(--accent);
-    border: none;
-    cursor: pointer;
-    transition: transform 0.15s ease;
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-}
+        .setting label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
 
-input[type="range"]::-moz-range-thumb:hover {
-    transform: scale(1.2);
-}
+        .slider-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 0.6rem;
+        }
 
+        .slider-row span {
+            font-size: 0.65rem;
+            font-weight: 400;
+            color: var(--muted);
+            font-style: italic;
+        }
 
-</style>
+        .track {
+            position: relative;
+            height: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .notches {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .notch {
+            width: 6px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 1px;
+            transform: rotate(45deg);
+            transition: background 0.2s;
+            z-index: 2;
+        }
+
+        .setting:hover .notch,
+        .setting:hover input[type="range"] {
+            background: var(--accent-moderate);
+        }
+
+        input[type="range"] {
+            appearance: none;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            border-radius: 1px;
+            cursor: pointer;
+            position: relative;
+            z-index: 3;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            position: relative;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 2px;
+            transform: rotate(45deg);
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border: none;
+            border-radius: 2px;
+            transform: rotate(45deg);
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="range"]:hover::-webkit-slider-thumb {
+            transform: rotate(45deg) scale(1.15);
+            box-shadow: var(--shadow-thumb);
+        }
+
+        input[type="range"]:hover::-moz-range-thumb {
+            transform: rotate(45deg) scale(1.15);
+            box-shadow: var(--shadow-thumb);
+        }
+
+        input[type="range"]:active::-webkit-slider-thumb {
+            cursor: grabbing;
+        }
+
+        input[type="range"]:active::-moz-range-thumb {
+            cursor: grabbing;
+        }
+    </style>
 </head>
-  <body>
-    <div id="main-container">
-        <h1>Sustainify</h1>
-        <div id="settings-container">
-            <div class="section-caption">your values:</div>
-            
-            <div class="setting-item">
-                <div class="setting-label">Country of Origin</div>
-                <div class="importance-label" id="label-country">very important</div>
-                <div class="slider-wrapper">
-                    <div class="slider-notches">
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
+
+<body>
+    <main>
+        <header>
+            <h1>Sustainify</h1>
+            <button class="icon-btn" id="btn-theme" aria-label="Toggle theme">
+                <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" style="display:none">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+        </header>
+        <div class="settings">
+            <div class="setting">
+                <label>Country of Origin</label>
+                <div class="slider-row">
+                    <span>less</span>
+                    <div class="track">
+                        <div class="notches"><i class="notch"></i><i class="notch"></i><i class="notch"></i><i
+                                class="notch"></i><i class="notch"></i></div>
+                        <input type="range" min="0" max="4" value="2" id="country">
                     </div>
-                    <input type="range" min="0" max="4" value="0" step="1" id="slider-country">
+                    <span>more</span>
                 </div>
             </div>
-            
-            <div class="setting-item">
-                <div class="setting-label">Sustainable Materials</div>
-                <div class="importance-label" id="label-materials">very important</div>
-                <div class="slider-wrapper">
-                    <div class="slider-notches">
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
+            <div class="setting">
+                <label>Sustainable Materials</label>
+                <div class="slider-row">
+                    <span>less</span>
+                    <div class="track">
+                        <div class="notches"><i class="notch"></i><i class="notch"></i><i class="notch"></i><i
+                                class="notch"></i><i class="notch"></i></div>
+                        <input type="range" min="0" max="4" value="2" id="materials">
                     </div>
-                    <input type="range" min="0" max="4" value="0" step="1" id="slider-materials">
+                    <span>more</span>
                 </div>
             </div>
-            
-            <div class="setting-item">
-                <div class="setting-label">Animal Cruelty</div>
-                <div class="importance-label" id="label-animal">very important</div>
-                <div class="slider-wrapper">
-                    <div class="slider-notches">
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
+            <div class="setting">
+                <label>Animal Welfare</label>
+                <div class="slider-row">
+                    <span>less</span>
+                    <div class="track">
+                        <div class="notches"><i class="notch"></i><i class="notch"></i><i class="notch"></i><i
+                                class="notch"></i><i class="notch"></i></div>
+                        <input type="range" min="0" max="4" value="2" id="animal">
                     </div>
-                    <input type="range" min="0" max="4" value="0" step="1" id="slider-animal">
+                    <span>more</span>
                 </div>
             </div>
-            
-            <div class="setting-item">
-                <div class="setting-label">Fair Labor</div>
-                <div class="importance-label" id="label-labor">very important</div>
-                <div class="slider-wrapper">
-                    <div class="slider-notches">
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
-                        <span class="notch"></span>
+            <div class="setting">
+                <label>Fair Labor</label>
+                <div class="slider-row">
+                    <span>less</span>
+                    <div class="track">
+                        <div class="notches"><i class="notch"></i><i class="notch"></i><i class="notch"></i><i
+                                class="notch"></i><i class="notch"></i></div>
+                        <input type="range" min="0" max="4" value="2" id="labor">
                     </div>
-                    <input type="range" min="0" max="4" value="0" step="1" id="slider-labor">
+                    <span>more</span>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <script>
-        const importanceLabels = [
-            'very important',
-            'important',
-            'neutral',
-            'unimportant',
-            'very unimportant'
-        ];
-        
-        const sliders = ['country', 'materials', 'animal', 'labor'];
-        
-        sliders.forEach(name => {
-            const slider = document.getElementById(`slider-${name}`);
-            const label = document.getElementById(`label-${name}`);
-            
-            slider.addEventListener('input', (e) => {
-                label.textContent = importanceLabels[e.target.value];
-            });
-        });
-    </script>
-  </body>
+    </main>
+    <script src="popup.js"></script>
+</body>
+
 </html>
