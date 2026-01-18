@@ -199,13 +199,6 @@ toggleBtn.addEventListener("click", () => {
     chrome.storage.sync.set({ darkMode: !currentDarkMode });
 });
 
-document.querySelectorAll('.room-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        openModal(link.dataset.category);
-    });
-});
-
 modalClose.addEventListener('click', closeModal);
 itemModal.addEventListener('click', (e) => {
     if (e.target === itemModal) closeModal();

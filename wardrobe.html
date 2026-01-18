@@ -4,8 +4,165 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Wardrobe</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Source Serif 4", Georgia, serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: url("backdrops/wardrobeBackdrop.png") center / cover no-repeat fixed;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 5;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 999px;
+            color: #4b2f1e;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .closet-floor {
+            position: relative;
+            width: min(860px, 86vw);
+            height: min(260px, 30vh);
+            margin-bottom: 48px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .stack-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            justify-content: center;
+            width: 100%;
+            pointer-events: auto;
+        }
+
+        .folded-stack {
+            --stack-base: #d7c0a3;
+            --stack-mid: #c3a684;
+            --stack-dark: #a98660;
+            width: 130px;
+            min-height: 48px;
+            padding: 10px 12px 12px;
+            border-radius: 10px;
+            background: var(--stack-base);
+            color: #3b2a1f;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.2;
+            box-shadow:
+                0 6px 0 var(--stack-mid),
+                0 12px 0 var(--stack-dark),
+                0 16px 18px rgba(0, 0, 0, 0.25);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .folded-stack:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 6px 0 var(--stack-mid),
+                0 12px 0 var(--stack-dark),
+                0 18px 22px rgba(0, 0, 0, 0.28);
+        }
+
+        .empty-state {
+            color: #3f2a1c;
+            font-weight: 600;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 10px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+            pointer-events: auto;
+        }
+    </style>
 </head>
 <body>
+    <a class="back-btn" href="quirkydashboard.html">← Back</a>
+
+    <div class="closet-floor" aria-live="polite">
+        <div class="stack-grid" id="stack-grid"></div>
+        <div class="empty-state" id="empty-state">No clothing items yet.</div>
+    </div>
+
+    <script>
+        const grid = document.getElementById('stack-grid');
+        const emptyState = document.getElementById('empty-state');
+
+        const shade = (hex, amt) => {
+            const num = parseInt(hex.slice(1), 16);
+            const clamp = (v) => Math.max(0, Math.min(255, v));
+            const r = clamp((num >> 16) + amt);
+            const g = clamp(((num >> 8) & 0x00ff) + amt);
+            const b = clamp((num & 0x0000ff) + amt);
+            return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+        };
+
+        const palette = ['#d7c0a3', '#cbb8a3', '#d9b8a8', '#e0c1a4', '#c8b2a1'];
+
+        const isClothing = (item) => {
+            const type = (item.type || '').toLowerCase();
+            return type.includes('clothing') || type.includes('cloth') || type.includes('apparel');
+        };
+
+        const renderStacks = (stash) => {
+            const clothing = stash.filter(isClothing);
+            grid.innerHTML = '';
+
+            if (clothing.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            clothing.forEach((item, index) => {
+                const base = palette[index % palette.length];
+                const stack = document.createElement('a');
+                stack.className = 'folded-stack';
+                stack.href = item.link || '#';
+                stack.target = item.link ? '_blank' : '_self';
+                stack.rel = item.link ? 'noopener' : '';
+                stack.style.setProperty('--stack-base', base);
+                stack.style.setProperty('--stack-mid', shade(base, -18));
+                stack.style.setProperty('--stack-dark', shade(base, -36));
+                stack.textContent = item.name || 'Clothing Item';
+                if (!item.link) {
+                    stack.style.pointerEvents = 'none';
+                }
+                grid.appendChild(stack);
+            });
+        };
+
+        const loadStash = () => {
+            if (window.chrome && chrome.storage && chrome.storage.sync) {
+                chrome.storage.sync.get(['stash'], result => {
+                    const stash = result.stash ? JSON.parse(result.stash) : [];
+                    renderStacks(stash);
+                });
+            } else {
+                renderStacks([]);
+            }
+        };
+
+        loadStash();
+    </script>
 </body>
 </html>
-
