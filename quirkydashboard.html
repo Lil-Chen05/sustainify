@@ -308,6 +308,35 @@
             transform: translateY(-1px);
         }
 
+        .share-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            color: var(--text);
+            font-weight: 600;
+            font-family: sans-serif;
+            border: 1px solid var(--border);
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .share-btn:hover {
+            background: var(--card);
+            transform: translateY(-1px);
+        }
+
+        .share-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
         .score-control {
             position: fixed;
             bottom: 24px;
@@ -374,6 +403,16 @@
 
 <body data-backdrop="day3">
     <a href="dashboard.html" class="nav-btn">← Standard View</a>
+    <button class="share-btn" id="btn-share">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+        Share
+    </button>
     <div class="viewport-constraint">
         <div class="scene" id="scene-container">
             <div class="backdrop-fade" id="backdrop-fade" aria-hidden="true"></div>

@@ -114,12 +114,15 @@ const updatePlantGrowth = (avgScore) => {
     } else {
         // Growing: stem gets taller from 50 to 260px
         const growProgress = (score - 50) / 50; // 0 at 50, 1 at 100
-        stemHeight = 50 + growProgress * 240; // 50px to 260px
+        stemHeight = 20 + growProgress * 260; // 50px to 260px
     }
     stemTopY = stemBaseY - stemHeight;
     
     // Build SVG
     let svg = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-hidden="true">`;
+    
+    // Pot shadow (drawn first so it's behind)
+    svg += `<ellipse cx="${centerX}" cy="${potBottomY + 4}" rx="${potBottomWidth + 8}" ry="5" fill="hsl(0 0% 0% / 0.15)"/>`;
     
     // Clay pot - brownish red terracotta
     svg += `<path d="
@@ -382,5 +385,34 @@ if (debugSlider) {
         const score = parseInt(e.target.value);
         updatePlantGrowth(score);
         document.getElementById('avg-number').textContent = score;
+    });
+}
+
+// Share modal
+const shareModal = document.getElementById('share-modal');
+const btnShare = document.getElementById('btn-share');
+const shareModalClose = document.getElementById('share-modal-close');
+
+if (btnShare && shareModal) {
+    btnShare.addEventListener('click', () => {
+        shareModal.classList.add('active');
+    });
+
+    shareModalClose.addEventListener('click', () => {
+        shareModal.classList.remove('active');
+    });
+
+    // Close on overlay click
+    shareModal.addEventListener('click', (e) => {
+        if (e.target === shareModal) {
+            shareModal.classList.remove('active');
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && shareModal.classList.contains('active')) {
+            shareModal.classList.remove('active');
+        }
     });
 }

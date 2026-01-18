@@ -20,6 +20,8 @@
             --shadow-hover: 0 4px 8px hsl(155 25% 40% / 0.2);
             --flower: hsl(340 70% 65%);
             --flower-center: hsl(45 90% 60%);
+            --plant-panel: hsl(155 25% 90%);
+            --plant-panel-border: hsl(155 30% 75%);
         }
 
         [data-theme="dark"] {
@@ -34,6 +36,8 @@
             --shadow-hover: 0 6px 12px hsl(0 0% 0% / 0.5);
             --flower: hsl(340 65% 70%);
             --flower-center: hsl(45 85% 65%);
+            --plant-panel: hsl(155 20% 12%);
+            --plant-panel-border: hsl(155 25% 20%);
         }
 
         * {
@@ -135,15 +139,27 @@
         .plant-column {
             flex: 3;
             display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+            padding: 0.5rem;
+        }
+
+        .plant-panel {
+            flex: 1;
+            background: var(--plant-panel);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            display: flex;
             align-items: flex-end;
             justify-content: center;
-            padding-bottom: 2rem;
         }
 
         .plant-container {
             width: 100%;
             max-width: 220px;
-            height: 380px;
+            height: 100%;
+            max-height: 400px;
             display: flex;
             align-items: flex-end;
             justify-content: center;
@@ -414,6 +430,104 @@
             border-radius: 50%;
             cursor: pointer;
         }
+
+        /* Share Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: hsl(0 0% 0% / 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .share-modal {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px hsl(0 0% 0% / 0.2);
+            min-width: 280px;
+            transform: scale(0.95);
+            transition: transform 0.2s;
+        }
+
+        .modal-overlay.active .share-modal {
+            transform: scale(1);
+        }
+
+        .share-modal h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .share-options {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 70px;
+        }
+
+        .share-option:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .share-option svg {
+            width: 24px;
+            height: 24px;
+            color: var(--accent);
+        }
+
+        .share-option span {
+            font-size: 0.7rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .modal-close {
+            display: block;
+            margin: 1rem auto 0;
+            padding: 0.5rem 1.5rem;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
     </style>
 </head>
 
@@ -459,16 +573,73 @@
                 <div class="footer-actions">
                     <button class="footer-action" id="btn-clear">Clear Stash</button>
                     <button class="footer-action" id="btn-quirky">Quirky Theme</button>
+                    <button class="footer-action" id="btn-share">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                        Share
+                    </button>
+                    <button class="footer-action" id="btn-support">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        Support
+                    </button>
+                    <button class="footer-action" id="btn-contact">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        Contact
+                    </button>
                     <input type="range" class="debug-slider" id="debug-score" min="0" max="100" value="0" title="Test score">
                 </div>
             </div>
             <div class="plant-column">
-                <div class="plant-container" id="growth-plant" aria-label="Sustainability growth plant">
-                    <!-- Plant SVG will be generated by JS -->
+                <div class="plant-panel">
+                    <div class="plant-container" id="growth-plant" aria-label="Sustainability growth plant">
+                        <!-- Plant SVG will be generated by JS -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Share Modal -->
+    <div class="modal-overlay" id="share-modal">
+        <div class="share-modal">
+            <h3>Share Your Stash</h3>
+            <div class="share-options">
+                <button class="share-option" id="share-instagram">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    <span>Instagram</span>
+                </button>
+                <button class="share-option" id="share-x">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>X</span>
+                </button>
+                <button class="share-option" id="share-copy">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                    <span>Copy Link</span>
+                </button>
+            </div>
+            <button class="modal-close" id="share-modal-close">Close</button>
+        </div>
+    </div>
+
     <script src="dashboard.js"></script>
 </body>
 
