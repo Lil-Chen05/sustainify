@@ -149,6 +149,20 @@ const updatePlantGrowth = (avgScore) => {
     // Soil
     svg += `<ellipse cx="${centerX}" cy="${potTopY + potRimHeight - 1}" rx="${potTopWidth - 2}" ry="4" fill="hsl(25 40% 25%)"/>`;
     
+    // Potential growth line (dashed) - shows max possible height
+    const maxStemHeight = 280; // Max height at score 100
+    const potentialTopY = stemBaseY - maxStemHeight;
+    const isDarkMode = document.body.dataset.theme === 'dark';
+    const guideLineColor = isDarkMode ? 'hsl(155 25% 35%)' : 'hsl(155 25% 75%)';
+    svg += `<line 
+        x1="${centerX}" y1="${stemBaseY - 10}" 
+        x2="${centerX}" y2="${potentialTopY}" 
+        stroke="${guideLineColor}" 
+        stroke-width="1.5" 
+        stroke-dasharray="4 6" 
+        stroke-linecap="round"
+        opacity="0.5"/>`;
+    
     // Only draw plant if score > 0
     if (score > 0) {
         if (isWilting) {
@@ -388,31 +402,46 @@ if (debugSlider) {
     });
 }
 
-// Share modal
-const shareModal = document.getElementById('share-modal');
-const btnShare = document.getElementById('btn-share');
-const shareModalClose = document.getElementById('share-modal-close');
+// Modal helper function
+const setupModal = (modalId, buttonId, closeId) => {
+    const modal = document.getElementById(modalId);
+    const btn = document.getElementById(buttonId);
+    const closeBtn = document.getElementById(closeId);
 
-if (btnShare && shareModal) {
-    btnShare.addEventListener('click', () => {
-        shareModal.classList.add('active');
-    });
+    if (btn && modal) {
+        btn.addEventListener('click', () => {
+            modal.classList.add('active');
+        });
 
-    shareModalClose.addEventListener('click', () => {
-        shareModal.classList.remove('active');
-    });
-
-    // Close on overlay click
-    shareModal.addEventListener('click', (e) => {
-        if (e.target === shareModal) {
-            shareModal.classList.remove('active');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
         }
-    });
 
-    // Close on Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && shareModal.classList.contains('active')) {
-            shareModal.classList.remove('active');
-        }
-    });
-}
+        // Close on overlay click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+
+    return modal;
+};
+
+// Setup all modals
+const shareModal = setupModal('share-modal', 'btn-share', 'share-modal-close');
+const supportModal = setupModal('support-modal', 'btn-support', 'support-modal-close');
+const contactModal = setupModal('contact-modal', 'btn-contact', 'contact-modal-close');
+
+// Close any open modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        [shareModal, supportModal, contactModal].forEach(modal => {
+            if (modal && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            }
+        });
+    }
+});
