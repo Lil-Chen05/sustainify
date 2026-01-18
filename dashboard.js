@@ -42,18 +42,57 @@ const updatePlantGrowth = (avgScore) => {
     if (!plantEl) return;
     
     const score = Math.max(0, Math.min(100, Number(avgScore) || 0));
-    const numLeaves = Math.floor(score / 5); // 1 leaf per 5 points, max 20
+    
+    // Calculate number of leaves using diminishing returns (only above 50)
+    // 50: 0 leaves, 66 (+16): 1, 74 (+8): 2, 78 (+4): 3, 80 (+2): 4, then +1 per point
+    const calculateLeaves = (s) => {
+        if (s < 50) return 0;
+        if (s < 66) return 0;
+        if (s < 74) return 1;
+        if (s < 78) return 2;
+        if (s < 80) return 3;
+        if (s < 81) return 4;
+        return 4 + (s - 80); // 5 leaves at 81, 6 at 82, etc.
+    };
+    const numLeaves = calculateLeaves(score);
     const hasFlower = score >= 80;
+    const isWilting = score < 50;
+    
+    // Color interpolation for wilting: green (50) → yellow (25) → brown (0)
+    const getPlantColor = (s) => {
+        if (s >= 50) {
+            return { hue: 155, sat: 40, light: 28 }; // Healthy green
+        } else if (s >= 25) {
+            // Green to yellow (50 → 25)
+            const t = (s - 25) / 25; // 1 at 50, 0 at 25
+            return {
+                hue: 155 * t + 50 * (1 - t), // 155 → 50
+                sat: 40 * t + 70 * (1 - t),   // 40 → 70
+                light: 28 * t + 45 * (1 - t)  // 28 → 45
+            };
+        } else {
+            // Yellow to brown (25 → 0)
+            const t = s / 25; // 1 at 25, 0 at 0
+            return {
+                hue: 50 * t + 25 * (1 - t),   // 50 → 25
+                sat: 70 * t + 50 * (1 - t),   // 70 → 50
+                light: 45 * t + 30 * (1 - t)  // 45 → 30
+            };
+        }
+    };
+    const plantColor = getPlantColor(score);
+    const stemColor = `hsl(${plantColor.hue} ${plantColor.sat}% ${plantColor.light}%)`;
+    const leafColor = `hsl(${plantColor.hue} ${Math.max(35, plantColor.sat - 5)}% ${Math.min(55, plantColor.light + 15)}%)`;
+    const budColor = stemColor;
     
     // SVG dimensions
     const width = 100;
-    const height = 300;
+    const height = 360;
     const centerX = width / 2;
     
-    // Pot dimensions - positioned higher up
+    // Pot dimensions
     const potTopY = height - 70;
     const potBottomY = height - 30;
-    const potHeight = potBottomY - potTopY;
     const potTopWidth = 28;
     const potBottomWidth = 20;
     const potRimHeight = 6;
@@ -61,104 +100,132 @@ const updatePlantGrowth = (avgScore) => {
     // Stem emerges from pot
     const stemBaseY = potTopY;
     
-    // Stem grows from 35px (score 0) to 200px (score 100)
-    const minStemHeight = 35;
-    const maxStemHeight = 200;
-    const stemHeight = minStemHeight + (score / 100) * (maxStemHeight - minStemHeight);
-    const stemTopY = stemBaseY - stemHeight;
+    // Stem height based on score
+    // Below 50: smaller wilted stem, Above 50: grows taller
+    let stemHeight, stemTopY, wiltAmount = 0;
+    
+    if (score <= 0) {
+        stemHeight = 0; // No stem at 0
+    } else if (score < 50) {
+        // Wilting: stem is shorter and droops
+        const wiltProgress = score / 50; // 0 at score 0, 1 at score 50
+        stemHeight = 15 + wiltProgress * 35; // 15px to 50px
+        wiltAmount = (1 - wiltProgress) * 20; // How much it droops sideways
+    } else {
+        // Growing: stem gets taller from 50 to 260px
+        const growProgress = (score - 50) / 50; // 0 at 50, 1 at 100
+        stemHeight = 50 + growProgress * 240; // 50px to 260px
+    }
+    stemTopY = stemBaseY - stemHeight;
     
     // Build SVG
     let svg = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-hidden="true">`;
     
     // Clay pot - brownish red terracotta
-    // Pot body (trapezoid shape)
-    svg += `<path class="plant-pot-body" d="
+    svg += `<path d="
         M ${centerX - potTopWidth} ${potTopY + potRimHeight}
         L ${centerX - potBottomWidth} ${potBottomY}
         L ${centerX + potBottomWidth} ${potBottomY}
         L ${centerX + potTopWidth} ${potTopY + potRimHeight}
         Z" fill="hsl(15 55% 45%)"/>`;
     
-    // Pot rim (top edge)
-    svg += `<rect class="plant-pot-rim" 
+    // Pot rim
+    svg += `<rect 
         x="${centerX - potTopWidth - 3}" y="${potTopY}" 
         width="${(potTopWidth + 3) * 2}" height="${potRimHeight}" 
         rx="2" fill="hsl(15 50% 38%)"/>`;
     
-    // Pot highlight (subtle 3D effect)
-    svg += `<path class="plant-pot-highlight" d="
+    // Pot highlight
+    svg += `<path d="
         M ${centerX - potTopWidth + 4} ${potTopY + potRimHeight + 2}
         L ${centerX - potBottomWidth + 3} ${potBottomY - 3}
         L ${centerX - potBottomWidth + 8} ${potBottomY - 3}
         L ${centerX - potTopWidth + 9} ${potTopY + potRimHeight + 2}
         Z" fill="hsl(15 50% 55%)" opacity="0.5"/>`;
     
-    // Soil in pot
-    svg += `<ellipse class="plant-soil" cx="${centerX}" cy="${potTopY + potRimHeight - 1}" rx="${potTopWidth - 2}" ry="4" fill="hsl(25 40% 25%)"/>`;
+    // Soil
+    svg += `<ellipse cx="${centerX}" cy="${potTopY + potRimHeight - 1}" rx="${potTopWidth - 2}" ry="4" fill="hsl(25 40% 25%)"/>`;
     
-    // Stem
-    svg += `<line class="plant-stem" x1="${centerX}" y1="${stemBaseY}" x2="${centerX}" y2="${stemTopY}"/>`;
-    
-    // Leaves - positioned along the stem, alternating sides with more spacing
-    if (numLeaves > 0) {
-        const minLeafSpacing = 12; // Minimum space between leaves
-        const leafSpacing = Math.max(minLeafSpacing, (stemHeight - 25) / Math.max(numLeaves, 1));
-        
-        for (let i = 0; i < numLeaves; i++) {
-            const leafY = stemBaseY - 15 - (i * leafSpacing);
-            // Don't draw leaves above the stem top
-            if (leafY < stemTopY + 15) continue;
+    // Only draw plant if score > 0
+    if (score > 0) {
+        if (isWilting) {
+            // Wilted stem - curved/drooping path
+            const droopDirection = 1; // Droop to the right
+            const controlX = centerX + wiltAmount * droopDirection;
+            const tipX = centerX + wiltAmount * 1.5 * droopDirection;
+            svg += `<path d="
+                M ${centerX} ${stemBaseY}
+                Q ${controlX} ${stemBaseY - stemHeight * 0.6}, ${tipX} ${stemTopY + 5}
+            " stroke="${stemColor}" stroke-width="4" stroke-linecap="round" fill="none"/>`;
             
-            const isLeft = i % 2 === 0;
-            const leafSize = 16;
+            // Wilted bud (smaller, drooping)
+            if (score > 10) {
+                const budSize = 4 + (score / 50) * 3;
+                svg += `<circle cx="${tipX}" cy="${stemTopY}" r="${budSize}" fill="${budColor}"/>`;
+            }
+        } else {
+            // Healthy stem - straight line
+            svg += `<line x1="${centerX}" y1="${stemBaseY}" x2="${centerX}" y2="${stemTopY}" 
+                stroke="${stemColor}" stroke-width="4" stroke-linecap="round"/>`;
             
-            if (isLeft) {
-                // Left leaf
-                svg += `<path class="plant-leaf" d="
-                    M ${centerX} ${leafY}
-                    C ${centerX - leafSize * 0.6} ${leafY - leafSize * 0.5},
-                      ${centerX - leafSize} ${leafY - leafSize * 0.3},
-                      ${centerX - leafSize * 1.2} ${leafY}
-                    C ${centerX - leafSize} ${leafY + leafSize * 0.3},
-                      ${centerX - leafSize * 0.6} ${leafY + leafSize * 0.5},
-                      ${centerX} ${leafY}
-                    Z"/>`;
+            // Leaves - positioned along the stem, alternating sides
+            if (numLeaves > 0) {
+                const minLeafSpacing = 14;
+                const leafSpacing = Math.max(minLeafSpacing, (stemHeight - 30) / Math.max(numLeaves, 1));
+                
+                for (let i = 0; i < numLeaves; i++) {
+                    const leafY = stemBaseY - 18 - (i * leafSpacing);
+                    if (leafY < stemTopY + 15) continue;
+                    
+                    const isLeft = i % 2 === 0;
+                    const leafSize = 16;
+                    
+                    if (isLeft) {
+                        svg += `<path d="
+                            M ${centerX} ${leafY}
+                            C ${centerX - leafSize * 0.6} ${leafY - leafSize * 0.5},
+                              ${centerX - leafSize} ${leafY - leafSize * 0.3},
+                              ${centerX - leafSize * 1.2} ${leafY}
+                            C ${centerX - leafSize} ${leafY + leafSize * 0.3},
+                              ${centerX - leafSize * 0.6} ${leafY + leafSize * 0.5},
+                              ${centerX} ${leafY}
+                            Z" fill="${leafColor}"/>`;
+                    } else {
+                        svg += `<path d="
+                            M ${centerX} ${leafY}
+                            C ${centerX + leafSize * 0.6} ${leafY - leafSize * 0.5},
+                              ${centerX + leafSize} ${leafY - leafSize * 0.3},
+                              ${centerX + leafSize * 1.2} ${leafY}
+                            C ${centerX + leafSize} ${leafY + leafSize * 0.3},
+                              ${centerX + leafSize * 0.6} ${leafY + leafSize * 0.5},
+                              ${centerX} ${leafY}
+                            Z" fill="${leafColor}"/>`;
+                    }
+                }
+            }
+            
+            // Bud or Flower at top
+            const budY = stemTopY - 5;
+            
+            if (hasFlower) {
+                // Pink flower with petals
+                const petalSize = 10;
+                const numPetals = 6;
+                for (let i = 0; i < numPetals; i++) {
+                    const angle = (i / numPetals) * Math.PI * 2 - Math.PI / 2;
+                    const petalX = centerX + Math.cos(angle) * petalSize * 0.8;
+                    const petalY = budY + Math.sin(angle) * petalSize * 0.8;
+                    svg += `<ellipse 
+                        cx="${petalX}" cy="${petalY}" 
+                        rx="${petalSize * 0.6}" ry="${petalSize * 0.4}"
+                        transform="rotate(${(angle * 180 / Math.PI) + 90}, ${petalX}, ${petalY})"
+                        fill="hsl(340 70% 65%)"/>`;
+                }
+                svg += `<circle cx="${centerX}" cy="${budY}" r="6" fill="hsl(45 90% 60%)"/>`;
             } else {
-                // Right leaf
-                svg += `<path class="plant-leaf" d="
-                    M ${centerX} ${leafY}
-                    C ${centerX + leafSize * 0.6} ${leafY - leafSize * 0.5},
-                      ${centerX + leafSize} ${leafY - leafSize * 0.3},
-                      ${centerX + leafSize * 1.2} ${leafY}
-                    C ${centerX + leafSize} ${leafY + leafSize * 0.3},
-                      ${centerX + leafSize * 0.6} ${leafY + leafSize * 0.5},
-                      ${centerX} ${leafY}
-                    Z"/>`;
+                svg += `<circle cx="${centerX}" cy="${budY}" r="7" fill="${budColor}"/>`;
             }
         }
-    }
-    
-    // Bud or Flower at top
-    const budY = stemTopY - 5;
-    
-    if (hasFlower) {
-        // Pink flower with petals
-        const petalSize = 10;
-        const numPetals = 6;
-        for (let i = 0; i < numPetals; i++) {
-            const angle = (i / numPetals) * Math.PI * 2 - Math.PI / 2;
-            const petalX = centerX + Math.cos(angle) * petalSize * 0.8;
-            const petalY = budY + Math.sin(angle) * petalSize * 0.8;
-            svg += `<ellipse class="plant-flower-petal" 
-                cx="${petalX}" cy="${petalY}" 
-                rx="${petalSize * 0.6}" ry="${petalSize * 0.4}"
-                transform="rotate(${(angle * 180 / Math.PI) + 90}, ${petalX}, ${petalY})"/>`;
-        }
-        // Flower center
-        svg += `<circle class="plant-flower-center" cx="${centerX}" cy="${budY}" r="6"/>`;
-    } else {
-        // Simple bud/sphere
-        svg += `<circle class="plant-bud" cx="${centerX}" cy="${budY}" r="7"/>`;
     }
     
     svg += '</svg>';
