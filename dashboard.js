@@ -279,10 +279,14 @@ const renderStash = () => {
                 return a.localeCompare(b);
             });
 
-            html = categories.map(cat => `
-                <div class="category-header">${cat}</div>
-                ${grouped[cat].map((item, i) => renderItem(item, item.originalIndex, i * 0.04)).join('')}
-            `).join('');
+            html = categories.map(cat => {
+                const items = grouped[cat];
+                const catAvg = Math.round(items.reduce((sum, item) => sum + (item.scores.average || 0), 0) / items.length);
+                return `
+                    <div class="category-header">${cat} : <span class="category-avg">${catAvg}</span></div>
+                    ${items.map((item, i) => renderItem(item, item.originalIndex, i * 0.04)).join('')}
+                `;
+            }).join('');
         }
 
         listEl.innerHTML = html;
